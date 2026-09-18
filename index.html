@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="lv">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1"
+    >
+
+    <title>K-PUNKTS foto spēle | Atbilžu iesniegšana</title>
+
+    <link
+        href="https://fonts.googleapis.com/css?family=Roboto:400,500,700"
+        rel="stylesheet"
+    >
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: #353535;
+            color: #ffffff;
+            font-family: "Roboto", Arial, sans-serif;
+        }
+
+        body.modal-open {
+            overflow: hidden;
+        }
+
+        .page {
+            width: min(100%, 920px);
+            margin: auto;
+            padding: 28px 18px 50px;
+        }
+
+        form {
+            padding: 20px;
+            background: #353535;
+        }
+
+        fieldset {
+            margin: 0 0 18px;
+            padding: 18px;
+
+            border: 1px solid #707070;
+            border-radius: 7px;
+        }
+
+        legend {
+            padding: 0 8px;
+
+            color: #ea801a;
+
+            font-size: 19px;
+            font-weight: 700;
+        }
+
+        label {
+            display: block;
+
+            margin: 0 0 7px;
+
+            color: #dddddd;
+        }
+
+        input,
+        select {
+            width: 100%;
+
+            padding: 11px;
+
+            color: #111111;
+            background: #ffffff;
+
+            border: 1px solid #dddddd;
+            border-radius: 5px;
+
+            font: inherit;
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        .answers {
+            display: grid;
+
+            grid-template-columns:
+                repeat(2, minmax(0, 1fr));
+
+            gap: 12px;
+        }
+
+        .answer {
+            display: grid;
+
+            grid-template-columns:
+                minmax(110px, 180px) 1fr;
+
+            align-items: center;
+
+            gap: 16px;
+
+            padding: 12px;
+
+            border: 1px solid #666666;
+            border-radius: 6px;
+        }
+
+        .picture {
+            width: 100%;
+
+            aspect-ratio: 3 / 4;
+
+            overflow: hidden;
+
+            display: grid;
+            place-items: center;
+
+            color: #ea801a;
+            background: #242424;
+
+            border-radius: 5px;
+
+            font-weight: 700;
+        }
+
+        .picture img {
+            display: block;
+
+            width: 100%;
+            height: 100%;
+
+            object-fit: contain;
+
+            cursor: zoom-in;
+        }
+
+        .answer label {
+            margin: 0 0 7px;
+        }
+
+        .kp-select-row {
+            display: flex;
+            align-items: center;
+
+            gap: 10px;
+        }
+
+        .kp-prefix {
+            flex: 0 0 auto;
+
+            color: #dddddd;
+
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .kp-select-row select {
+            flex: 1;
+
+            width: auto;
+            min-width: 65px;
+
+            padding: 9px;
+        }
+
+        .checkline {
+            display: flex;
+            align-items: flex-start;
+
+            gap: 10px;
+
+            color: #dddddd;
+
+            cursor: pointer;
+        }
+
+        .checkline input {
+            width: auto;
+
+            margin-top: 3px;
+
+            accent-color: #ea801a;
+        }
+
+        #emailWrap {
+            margin-top: 14px;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .hint {
+            margin: 0 0 14px;
+
+            color: #aaaaaa;
+
+            font-size: 13px;
+        }
+
+        .error {
+            min-height: 20px;
+
+            margin: 12px 0;
+
+            color: #ffb4b4;
+        }
+
+        button {
+            width: 100%;
+
+            padding: 13px 20px;
+
+            color: #ffffff;
+            background: #ea801a;
+
+            border: 0;
+            border-radius: 6px;
+
+            font: 700 16px "Roboto", Arial, sans-serif;
+
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #cf6c0f;
+        }
+
+        button:disabled {
+            opacity: 0.6;
+
+            cursor: wait;
+        }
+
+        .success {
+            padding: 18px;
+
+            color: #dff6e4;
+            background: #243d29;
+
+            border: 1px solid #67b879;
+            border-radius: 7px;
+        }
+
+        /* ================================================
+           SMALL CENTERED IMAGE POPUP
+           ================================================ */
+
+        .image-modal {
+            position: fixed;
+
+            inset: 0;
+
+            z-index: 9999;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            padding: 20px;
+
+            background: rgba(0, 0, 0, 0.65);
+        }
+
+        .image-modal.hidden {
+            display: none;
+        }
+
+        .image-modal-content {
+            position: relative;
+
+            width: min(82vw, 430px);
+            max-height: 82vh;
+
+            padding: 8px;
+
+            background: #242424;
+
+            border-radius: 8px;
+
+            box-shadow:
+                0 12px 35px
+                rgba(0, 0, 0, 0.6);
+
+            animation:
+                imagePop 0.18s ease-out;
+        }
+
+        .image-modal img {
+            display: block;
+
+            width: 100%;
+
+            max-height: calc(82vh - 16px);
+
+            object-fit: contain;
+
+            border-radius: 5px;
+        }
+
+        .image-modal-close {
+            position: absolute;
+
+            top: -13px;
+            right: -13px;
+
+            z-index: 10000;
+
+            width: 36px;
+            height: 36px;
+
+            padding: 0;
+
+            color: #ffffff;
+            background: #ea801a;
+
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+
+            font-size: 24px;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        .image-modal-close:hover {
+            background: #cf6c0f;
+        }
+
+        @keyframes imagePop {
+            from {
+                opacity: 0;
+
+                transform: scale(0.88);
+            }
+
+            to {
+                opacity: 1;
+
+                transform: scale(1);
+            }
+        }
+
+        @media (max-width: 650px) {
+            .page {
+                padding: 18px 10px 36px;
+            }
+
+            form {
+                padding: 12px;
+            }
+
+            fieldset {
+                padding: 12px;
+            }
+
+            .answers {
+                grid-template-columns: 1fr;
+            }
+
+            .answer {
+                grid-template-columns:
+                    minmax(90px, 130px) 1fr;
+
+                gap: 12px;
+
+                padding: 10px;
+            }
+
+            .image-modal {
+                padding: 14px;
+            }
+
+            .image-modal-content {
+                width: min(84vw, 360px);
+                max-height: 78vh;
+            }
+
+            .image-modal img {
+                max-height: calc(78vh - 16px);
+            }
+        }
+
+        @media (max-width: 400px) {
+            .answer {
+                grid-template-columns: 105px 1fr;
+            }
+
+            .kp-select-row {
+                align-items: flex-start;
+                flex-direction: column;
+
+                gap: 5px;
+            }
+
+            .kp-select-row select {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <main class="page">
+        <form
+            id="submissionForm"
+            novalidate
+        >
+            <fieldset>
+                <legend>Komanda</legend>
+
+                <div class="field">
+                    <label for="teamName">
+                        Komandas nosaukums*
+                    </label>
+
+                    <input
+                        id="teamName"
+                        maxlength="100"
+                        required
+                        autocomplete="organization"
+                    >
+                </div>
+
+                <div class="field">
+                    <label for="participantCount">
+                        Dalībnieku skaits*
+                    </label>
+
+                    <select
+                        id="participantCount"
+                        required
+                    >
+                        <option value="">
+                            Izvēlies
+                        </option>
+
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+            </fieldset>
+
+            <fieldset>
+                <legend>Atbildes</legend>
+
+                <p class="hint">
+                    Pie katra attēla izvēlies vienu
+                    K-PUNKTS numuru. Vienu numuru nevar
+                    izmantot divreiz. Uzspied uz attēla,
+                    lai to palielinātu.
+                </p>
+
+                <div
+                    class="answers"
+                    id="answers"
+                ></div>
+            </fieldset>
+
+            <fieldset>
+                <legend>K-PUNKTS jaunumi</legend>
+
+                <label class="checkline">
+                    <input
+                        type="checkbox"
+                        id="newsletter"
+                    >
+
+                    <span>
+                        Vēlos saņemt aktuālāko informāciju
+                        par K-PUNKTS e-pastā
+                    </span>
+                </label>
+
+                <div
+                    class="field hidden"
+                    id="emailWrap"
+                >
+                    <label for="email">
+                        E-pasta adrese*
+                    </label>
+
+                    <input
+                        type="email"
+                        id="email"
+                        maxlength="160"
+                        autocomplete="email"
+                    >
+                </div>
+            </fieldset>
+
+            <div
+                id="message"
+                class="error"
+                role="alert"
+                aria-live="polite"
+            ></div>
+
+            <button
+                id="submitButton"
+                type="submit"
+            >
+                Iesniegt atbildes
+            </button>
+        </form>
+    </main>
+
+    <!-- IMAGE POPUP -->
+
+    <div
+        id="imageModal"
+        class="image-modal hidden"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Palielināts attēls"
+    >
+        <div class="image-modal-content">
+            <button
+                id="imageModalClose"
+                class="image-modal-close"
+                type="button"
+                aria-label="Aizvērt attēlu"
+            >
+                &times;
+            </button>
+
+            <img
+                id="expandedImage"
+                src=""
+                alt=""
+            >
+        </div>
+    </div>
+
+    <script type="module">
+        import {
+            initializeApp
+        } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            addDoc,
+            serverTimestamp
+        } from "https://www.gstatic.com/firebasejs/9.1.3/firebase-firestore.js";
+
+
+        const firebaseConfig = {
+            apiKey:
+                "AIzaSyBMb0jBPIDPdKJhvw8EdTT8zDIjmh9n4Uk",
+
+            authDomain:
+                "kpunkts-617f1.firebaseapp.com",
+
+            projectId:
+                "kpunkts-617f1",
+
+            storageBucket:
+                "kpunkts-617f1.appspot.com",
+
+            messagingSenderId:
+                "402643964732",
+
+            appId:
+                "1:402643964732:web:5d15d7317ace4554a94439"
+        };
+
+
+        const COLLECTION_NAME =
+            "kpFotoSpele2026";
+
+
+        const DRAFT_STORAGE_KEY =
+            "kpFotoSpele2026Draft";
+
+
+        const letters =
+            "ABCDEFGHIJ".split("");
+
+
+        const app =
+            initializeApp(
+                firebaseConfig
+            );
+
+
+        const db =
+            getFirestore(
+                app
+            );
+
+
+        const form =
+            document.getElementById(
+                "submissionForm"
+            );
+
+
+        const answersContainer =
+            document.getElementById(
+                "answers"
+            );
+
+
+        const newsletter =
+            document.getElementById(
+                "newsletter"
+            );
+
+
+        const emailWrap =
+            document.getElementById(
+                "emailWrap"
+            );
+
+
+        const email =
+            document.getElementById(
+                "email"
+            );
+
+
+        const message =
+            document.getElementById(
+                "message"
+            );
+
+
+        const submitButton =
+            document.getElementById(
+                "submitButton"
+            );
+
+
+        const imageModal =
+            document.getElementById(
+                "imageModal"
+            );
+
+
+        const expandedImage =
+            document.getElementById(
+                "expandedImage"
+            );
+
+
+        const imageModalClose =
+            document.getElementById(
+                "imageModalClose"
+            );
+
+
+        // =====================================================
+        // CREATE IMAGES AND DROPDOWNS
+        // =====================================================
+
+        answersContainer.innerHTML =
+            letters
+                .map(
+                    (letter, index) => `
+                        <div class="answer">
+                            <div class="picture">
+                                <img
+                                    src="./image/attels${index + 1}.jpeg"
+                                    alt="Attēls ${letter}"
+                                    loading="lazy"
+                                    tabindex="0"
+                                    role="button"
+                                    aria-label="Palielināt attēlu ${letter}"
+                                    onerror="
+                                        console.error(
+                                            'Neizdevās ielādēt:',
+                                            this.src
+                                        );
+
+                                        this.remove();
+
+                                        this.parentElement
+                                            .textContent =
+                                                '${letter}';
+                                    "
+                                >
+                            </div>
+
+                            <div>
+                                <label for="answer${letter}">
+                                    Attēls ${letter}*
+                                </label>
+
+                                <div class="kp-select-row">
+                                    <span class="kp-prefix">
+                                        K-PUNKTS
+                                    </span>
+
+                                    <select
+                                        id="answer${letter}"
+                                        data-letter="${letter}"
+                                        aria-label="K-PUNKTS numurs attēlam ${letter}"
+                                        required
+                                    >
+                                        <option value="">
+                                            —
+                                        </option>
+
+                                        ${
+                                            Array.from(
+                                                {
+                                                    length: 10
+                                                },
+
+                                                (_, i) => `
+                                                    <option
+                                                        value="${i + 1}"
+                                                    >
+                                                        ${i + 1}
+                                                    </option>
+                                                `
+                                            ).join("")
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    `
+                )
+                .join("");
+
+
+        const answerSelects =
+            [
+                ...document.querySelectorAll(
+                    "[data-letter]"
+                )
+            ];
+
+
+        // =====================================================
+        // IMAGE POPUP
+        // =====================================================
+
+        function openImage(image) {
+            expandedImage.src =
+                image.src;
+
+
+            expandedImage.alt =
+                image.alt;
+
+
+            imageModal.classList.remove(
+                "hidden"
+            );
+
+
+            document.body.classList.add(
+                "modal-open"
+            );
+
+
+            imageModalClose.focus();
+        }
+
+
+        function closeImage() {
+            imageModal.classList.add(
+                "hidden"
+            );
+
+
+            document.body.classList.remove(
+                "modal-open"
+            );
+
+
+            expandedImage.src = "";
+
+            expandedImage.alt = "";
+        }
+
+
+        answersContainer.addEventListener(
+            "click",
+            event => {
+                const image =
+                    event.target.closest(
+                        ".picture img"
+                    );
+
+
+                if (image) {
+                    openImage(
+                        image
+                    );
+                }
+            }
+        );
+
+
+        answersContainer.addEventListener(
+            "keydown",
+            event => {
+                const image =
+                    event.target.closest(
+                        ".picture img"
+                    );
+
+
+                if (
+                    image &&
+                    (
+                        event.key === "Enter" ||
+                        event.key === " "
+                    )
+                ) {
+                    event.preventDefault();
+
+                    openImage(
+                        image
+                    );
+                }
+            }
+        );
+
+
+        imageModalClose.addEventListener(
+            "click",
+            closeImage
+        );
+
+
+        imageModal.addEventListener(
+            "click",
+            event => {
+                if (
+                    event.target ===
+                    imageModal
+                ) {
+                    closeImage();
+                }
+            }
+        );
+
+
+        document.addEventListener(
+            "keydown",
+            event => {
+                if (
+                    event.key ===
+                        "Escape" &&
+
+                    !imageModal
+                        .classList
+                        .contains(
+                            "hidden"
+                        )
+                ) {
+                    closeImage();
+                }
+            }
+        );
+
+
+        // =====================================================
+        // PREVENT DUPLICATE NUMBERS
+        // =====================================================
+
+        function updateAvailableNumbers() {
+            const chosen =
+                new Set(
+                    answerSelects
+                        .map(
+                            select =>
+                                select.value
+                        )
+                        .filter(
+                            Boolean
+                        )
+                );
+
+
+            answerSelects.forEach(
+                select => {
+                    [
+                        ...select.options
+                    ].forEach(
+                        option => {
+                            option.disabled =
+                                Boolean(
+                                    option.value &&
+
+                                    option.value !==
+                                        select.value &&
+
+                                    chosen.has(
+                                        option.value
+                                    )
+                                );
+                        }
+                    );
+                }
+            );
+        }
+
+
+        // =====================================================
+        // SAVE DRAFT ON THE DEVICE
+        // =====================================================
+
+        function saveDraft() {
+            const draft = {
+                teamName:
+                    document
+                        .getElementById(
+                            "teamName"
+                        )
+                        .value,
+
+                participantCount:
+                    document
+                        .getElementById(
+                            "participantCount"
+                        )
+                        .value,
+
+                answers:
+                    Object.fromEntries(
+                        answerSelects.map(
+                            select => [
+                                select.dataset.letter,
+                                select.value
+                            ]
+                        )
+                    ),
+
+                newsletter:
+                    newsletter.checked,
+
+                email:
+                    email.value
+            };
+
+
+            try {
+                localStorage.setItem(
+                    DRAFT_STORAGE_KEY,
+                    JSON.stringify(
+                        draft
+                    )
+                );
+            } catch (error) {
+                console.warn(
+                    "Neizdevās saglabāt melnrakstu:",
+                    error
+                );
+            }
+        }
+
+
+        function restoreDraft() {
+            try {
+                const savedDraft =
+                    localStorage.getItem(
+                        DRAFT_STORAGE_KEY
+                    );
+
+
+                if (!savedDraft) {
+                    return;
+                }
+
+
+                const draft =
+                    JSON.parse(
+                        savedDraft
+                    );
+
+
+                document
+                    .getElementById(
+                        "teamName"
+                    )
+                    .value =
+                        draft.teamName || "";
+
+
+                document
+                    .getElementById(
+                        "participantCount"
+                    )
+                    .value =
+                        draft.participantCount || "";
+
+
+                answerSelects.forEach(
+                    select => {
+                        select.value =
+                            draft.answers?.[
+                                select.dataset.letter
+                            ] || "";
+                    }
+                );
+
+
+                newsletter.checked =
+                    Boolean(
+                        draft.newsletter
+                    );
+
+
+                email.value =
+                    draft.email || "";
+
+
+                emailWrap.classList.toggle(
+                    "hidden",
+                    !newsletter.checked
+                );
+
+
+                email.required =
+                    newsletter.checked;
+
+
+                updateAvailableNumbers();
+            } catch (error) {
+                console.warn(
+                    "Neizdevās atjaunot melnrakstu:",
+                    error
+                );
+            }
+        }
+
+
+        restoreDraft();
+
+
+        answerSelects.forEach(
+            select =>
+                select.addEventListener(
+                    "change",
+                    () => {
+                        updateAvailableNumbers();
+
+                        saveDraft();
+                    }
+                )
+        );
+
+
+        document
+            .getElementById(
+                "teamName"
+            )
+            .addEventListener(
+                "input",
+                saveDraft
+            );
+
+
+        document
+            .getElementById(
+                "participantCount"
+            )
+            .addEventListener(
+                "change",
+                saveDraft
+            );
+
+
+        email.addEventListener(
+            "input",
+            saveDraft
+        );
+
+
+        // =====================================================
+        // NEWSLETTER
+        // =====================================================
+
+        newsletter.addEventListener(
+            "change",
+            () => {
+                emailWrap.classList.toggle(
+                    "hidden",
+                    !newsletter.checked
+                );
+
+
+                email.required =
+                    newsletter.checked;
+
+
+                if (!newsletter.checked) {
+                    email.value = "";
+                }
+
+
+                saveDraft();
+            }
+        );
+
+
+        // =====================================================
+        // SUBMIT FORM
+        // =====================================================
+
+        form.addEventListener(
+            "submit",
+            async event => {
+                event.preventDefault();
+
+
+                message.textContent = "";
+
+
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+
+
+                    message.textContent =
+                        "Lūdzu aizpildi visus " +
+                        "obligātos laukus.";
+
+
+                    return;
+                }
+
+
+                const values =
+                    answerSelects.map(
+                        select =>
+                            Number(
+                                select.value
+                            )
+                    );
+
+
+                if (
+                    new Set(values).size !==
+                    letters.length
+                ) {
+                    message.textContent =
+                        "Katram attēlam jāizvēlas " +
+                        "atšķirīgs K-PUNKTS numurs.";
+
+
+                    return;
+                }
+
+
+                const answers =
+                    Object.fromEntries(
+                        answerSelects.map(
+                            select => [
+                                select.dataset.letter,
+
+                                Number(
+                                    select.value
+                                )
+                            ]
+                        )
+                    );
+
+
+                submitButton.disabled =
+                    true;
+
+
+                submitButton.textContent =
+                    "Iesniedz…";
+
+
+                try {
+                    await addDoc(
+                        collection(
+                            db,
+                            COLLECTION_NAME
+                        ),
+
+                        {
+                            teamName:
+                                document
+                                    .getElementById(
+                                        "teamName"
+                                    )
+                                    .value
+                                    .trim(),
+
+                            participantCount:
+                                Number(
+                                    document
+                                        .getElementById(
+                                            "participantCount"
+                                        )
+                                        .value
+                                ),
+
+                            answers,
+
+                            newsletter:
+                                newsletter.checked,
+
+                            email:
+                                newsletter.checked
+                                    ? email.value.trim()
+                                    : "",
+
+                            submissionTime:
+                                serverTimestamp()
+                        }
+                    );
+
+
+                    localStorage.removeItem(
+                        DRAFT_STORAGE_KEY
+                    );
+
+
+                    form.innerHTML = `
+                        <div class="success">
+                            <strong>Paldies!</strong>
+                            <br>
+                            Komandas atbildes ir saņemtas.
+                        </div>
+                    `;
+                } catch (error) {
+                    console.error(
+                        error
+                    );
+
+
+                    message.textContent =
+                        "Atbildes neizdevās nosūtīt: " +
+                        (
+                            error.code ||
+                            error.message
+                        );
+
+
+                    submitButton.disabled =
+                        false;
+
+
+                    submitButton.textContent =
+                        "Iesniegt atbildes";
+                }
+            }
+        );
+    </script>
+</body>
+</html>
